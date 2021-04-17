@@ -18,6 +18,12 @@ const std::string kVersionFilename{"/version"};
 const std::string kOSPath{"/etc/os-release"};
 const std::string kPasswordPath{"/etc/passwd"};
 
+//Accessed fields in system files
+const std::string field_totalProccesses = "processes";
+const std::string field_runningProccesses = "procs_running";
+const std::string field_pidUID = "Uid:";
+const std::string field_pidVMSize = "VmSize";
+
 // System
 float MemoryUtilization();
 long UpTime();
@@ -52,6 +58,10 @@ std::string Ram(int pid);
 std::string Uid(int pid);
 std::string User(int pid);
 long int UpTime(int pid);
+
+//helper functions
+int GetValueForField(const std::string& filePath, const std::string& fieldName);
+
 };  // namespace LinuxParser
 
 #endif
