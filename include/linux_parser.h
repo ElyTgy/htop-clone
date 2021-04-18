@@ -17,12 +17,16 @@ const std::string kMeminfoFilename{"/meminfo"};
 const std::string kVersionFilename{"/version"};
 const std::string kOSPath{"/etc/os-release"};
 const std::string kPasswordPath{"/etc/passwd"};
-
-//Accessed fields in system files
+//Accessed fields in files
 const std::string field_totalProccesses = "processes";
 const std::string field_runningProccesses = "procs_running";
 const std::string field_pidUID = "Uid:";
 const std::string field_pidVMSize = "VmSize";
+const std::string field_cpu = "cpu";
+//Accessed field numbers in files
+constexpr int fieldnum_utime = 14;
+constexpr int fieldnum_stime = 15;
+constexpr int fieldnum_username = 22;
 
 // System
 float MemoryUtilization();
@@ -44,9 +48,12 @@ enum CPUStates {
   kSoftIRQ_,
   kSteal_,
   kGuest_,
-  kGuestNice_
+  kGuestNice_,
+  CPUStatesNum_
 };
+
 std::vector<std::string> CpuUtilization();
+std::vector<std::string> CpuUtilization(int n);
 long Jiffies();
 long ActiveJiffies();
 long ActiveJiffies(int pid);
@@ -61,6 +68,8 @@ long int UpTime(int pid);
 
 //helper functions
 int GetValueForField(const std::string& filePath, const std::string& fieldName);
+std::vector<std::string> GetValuesForField(const std::string& filePath, const std::string& fieldName);
+long int GetValueAtRow(const std::string& filePath, int rowNum);
 
 };  // namespace LinuxParser
 

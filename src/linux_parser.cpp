@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cassert>
 
 #include "linux_parser.h"
 
@@ -105,20 +106,62 @@ long LinuxParser::UpTime()
 
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() 
-{ return 0; }
+{
+    std::vector<std::string> cpuUtils(CpuUtilization());
+    std::vector<long> cpuUtilsl{};
+    
+    for(unsigned int i = 0; i < cpuUtils.size(); ++i)
+    {
+      cpuUtilsl.push_back(stol(cpuUtils[i]));
+    }
+
+    cpuUtilsl[kUser_] = cpuUtilsl[kUser_] - cpuUtilsl[kGuest_];
+    cpuUtilsl[kNice_] = cpuUtilsl[kNice_] - cpuUtilsl[kGuestNice_];
+
+    long sum = 0;
+    for(int i = 0; i < CPUStatesNum_; ++i)
+    {
+        sum += cpuUtilsl[i];
+    }
+
+    return sum;
+}
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
+long LinuxParser::ActiveJiffies(int pid) 
+{
+    std::string filename = (kProcDirectory+to_string(pid)+kStatFilename);
+    long utime = LinuxParser::GetValueAtRow(filename, fieldnum_utime);
+    long stime = LinuxParser::GetValueAtRow(filename, fieldnum_stime);
+    
+    return (long long int)utime +  stime;
+}
 
 // TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
+long LinuxParser::ActiveJiffies() 
+{
+    return Jiffies()-IdleJiffies();
+}
 
 // TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
+long LinuxParser::IdleJiffies() 
+{
+    std::vector<std::string> cpuUtils(CpuUtilization());
+    return stol(cpuUtils[kIdle_])+stol(cpuUtils[kIOwait_]);
+}
 
 // TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+vector<string> LinuxParser::CpuUtilization() 
+{
+    return GetValuesForField(kProcDirectory+kStatFilename, field_cpu);
+}
+
+//returns the CPU utililzation for a specific CPU
+vector<string> LinuxParser::CpuUtilization(int n) 
+{
+    return GetValuesForField(kProcDirectory+kStatFilename, field_cpu+to_string(n));
+}
 
 // TODO: Read and return the total number of processes
 int LinuxParser::TotalProcesses() 
@@ -146,7 +189,7 @@ string LinuxParser::Command(int pid)
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid[[maybe_unused]]) 
+string LinuxParser::Ram(int pid) 
 {
     return to_string(GetValueForField(kProcDirectory + std::to_string(pid) + kStatusFilename,
                             field_pidVMSize));
@@ -162,29 +205,104 @@ string LinuxParser::Uid(int pid)
 
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::User(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::User(int pid) 
+{ 
+    std::fstream file(kPasswordPath);
+    if(file.is_open())
+    {
+        std::string uid = Uid(pid);
+        std::string findStr = uid + ':' + uid + ':';
+        std::string line;
+
+        while(getline(file, line))
+        {
+            if(line.find(findStr) != string::npos)
+            {
+                std::replace(line.begin(), line.end(), ':', ' ');
+                std::istringstream lineisstream(line);
+                std::string username;
+                lineisstream >> username;
+                return username;
+            }
+        }
+        assert(!"Couldnt find user");
+    }
+    else{assert(!"couldnt open file in user function");}
+}
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid[[maybe_unused]]) {return 0;}
+long LinuxParser::UpTime(int pid) 
+{
+    long int uptime = GetValueAtRow(kProcDirectory + to_string(pid) + kStatFilename, fieldnum_username);
+    return uptime / sysconf(_SC_CLK_TCK);
+}
 
 int LinuxParser::GetValueForField(const std::string& filePath, const std::string& fieldName)
 {
     std::ifstream file (filePath);
+    int fieldVal=0;
 	  if (file.is_open())
 	  {
-	  	std::string line;
-	  	while (std::getline(file, line))
-	  	{
-	  		std::istringstream linestream (line);
-	  		std::string field;
-	  		linestream >> field;
-	  		if (field == fieldName)
-	  		{
-	  			int fieldVal;
-	  			linestream >> fieldVal;
-	  			return fieldVal;
-	  		}
-	  	}
+	    	std::string line;
+	    	while (std::getline(file, line))
+	  	  {
+	  		    std::string field;
+	  		    file >> field;
+	  		    if (field == fieldName)
+	  		    {
+	  			      file >> fieldVal;
+	  			      return fieldVal;
+	  		    }
+	  	  }
+        assert(!"Invlaid field name in GetValueForField");
 	  }
+    else{assert(!"Coudlnt open file in GetValueForField");}
+    return fieldVal;//the compiler will complain if i dont return something eventhough this cant be returned
 }
+
+long int LinuxParser::GetValueAtRow(const std::string& filePath, int rowNum)
+{
+    std::ifstream file(filePath);
+    long val=0;
+    if(file.is_open())
+    {
+        for(int i = 1; i <= rowNum; ++i)
+        {
+            file>>val;
+        }
+        return val;
+        assert(!"row doesnt exist");
+    }
+    else{assert(!"Cant open file");}
+    return val;//the compiler will complain if i dont return something eventhough this cant be returned
+}
+
+std::vector<std::string> LinuxParser::GetValuesForField(const std::string& filePath, const std::string& fieldName)
+{
+    std::ifstream file (filePath);
+    std::vector<std::string> vecOfValues{};
+	  if (file.is_open())
+	  {
+        std::string line;
+        while (std::getline(file, line))
+        {
+            std::istringstream linestream (line);
+            std::string field;
+            linestream >> field;
+            if (field == fieldName)
+            {
+                std::string currentVal;
+                while(linestream >> currentVal)
+                {
+                    vecOfValues.push_back(currentVal);
+                }
+                return vecOfValues;
+            }
+            assert("Couldnt find the right field in 'GetValuesForField'");
+        }
+	  }
+    else{assert(!"Couldnt open file in 'GetValueForFields'");}
+    return vecOfValues;//the compiler will complain if i dont return something eventhough this cant be returned
+}
+
