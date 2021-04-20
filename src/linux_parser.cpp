@@ -88,7 +88,7 @@ float LinuxParser::MemoryUtilization()
           linestream >> field >> memInfo[i];
       }
   }
-  return 100.0f - (memInfo[MemFree] * 100.0f / memInfo[MemTotal]); 
+  return 100.0 - (memInfo[MemFree] * 100.0 / memInfo[MemTotal]); 
 }
 
 // TODO: Read and return the system uptime
