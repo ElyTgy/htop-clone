@@ -3,21 +3,43 @@
 
 #include "linux_parser.h"
 
-class Processor {
- public:
-  float Utilization();  // TODO: See src/processor.cpp
+struct ProcessorBase {
+public:
+  float Utilization();
+  virtual long GetActiveJiffies()=0;
+protected:
+    float _percentage = 0.0f;
 
-  // TODO: Declare any necessary private members
- private:
-long _prevIdle=0;
-long _idle=0;
+    float _totald=0;
+    float _actived=0;
 
-long _prevActive=0;
-long _active=0;
+    long _prevIdle=0;
+    long _idle=0;
 
-long _prevTotal=0;
-long _total=0;
+    long _prevActive=0;
+    long _active=0;
 
+    long _prevTotal=0;
+    long _total=0;
+};
+
+class CPUProccessor : public ProcessorBase
+{
+//currently only calculates the aggregate cpu's utilization
+public:
+    CPUProccessor(int cpuNum=-1); //-1 means aggregate cpu proccess
+    long GetActiveJiffies() override;
+private:
+    const int _cpuNum;
+};
+
+class ProccessProccessor : public ProcessorBase
+{
+public:
+    ProccessProccessor(int pid);
+    long GetActiveJiffies() override;
+private:
+    const int _processNum;
 };
 
 #endif

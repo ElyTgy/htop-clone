@@ -1,5 +1,6 @@
 #include "ncurses_display.h"
-#include "system.h"
+#include <iostream>
+#include "processor.h"
 
 int main() {
   System system;

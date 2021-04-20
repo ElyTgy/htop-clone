@@ -1,19 +1,40 @@
 #include "processor.h"
+#include <cassert>
+#include <iostream>
 
-// TODO: Return the aggregate CPU utilization
-float Processor::Utilization() 
+float ProcessorBase::Utilization()
 {
-     _prevIdle = _idle;
-     _prevActive = _active;
-     _prevTotal = _total;
+    return 0.5f;
+    _prevActive = _active;
+    _prevTotal = _total;
+    _active = GetActiveJiffies();
+    _total = GetActiveJiffies();
 
-     _idle = LinuxParser::IdleJiffies();
-     _active = LinuxParser::ActiveJiffies();
-     _total = LinuxParser::Jiffies();
+    if(_total != _prevTotal && _active != _prevActive)
+    {
+        _totald = float(_total) - float(_prevTotal);
+        _actived = float(_active) - float(_prevActive);
+        float addPercentage = _actived/_totald;
+        _percentage += addPercentage;
 
-    long totald = _total - _prevTotal;
-    long idled = _idle - _prevIdle;
+        //std::cout<<"active: "<<_active<<std::endl;
+        //std::cout<<"total: "<<_total<<std::endl;
+        //std::cout<<"totald: "<<_totald<<std::endl;
+        //std::cout<<"actived: " <<_actived<<std::endl;
+        //std::cout<<std::endl<<"Active to total ratio: "<<_percentage<<std::endl;
+    }
 
-    return (totald-idled)/totald;
+    return _percentage;
+}
 
+CPUProccessor::CPUProccessor(int cpuNum):_cpuNum(cpuNum){}
+long CPUProccessor::GetActiveJiffies()
+{
+     return LinuxParser::ActiveJiffies();
+}
+
+ProccessProccessor::ProccessProccessor(int pid) : _processNum(pid){}
+long ProccessProccessor::GetActiveJiffies()
+{
+     return LinuxParser::ActiveJiffies(_processNum);
 }
