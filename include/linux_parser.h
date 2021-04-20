@@ -21,7 +21,7 @@ const std::string kPasswordPath{"/etc/passwd"};
 const std::string field_totalProccesses = "processes";
 const std::string field_runningProccesses = "procs_running";
 const std::string field_pidUID = "Uid:";
-const std::string field_pidVMSize = "VmSize";
+const std::string field_pidVMSize = "VmSize:";
 const std::string field_cpu = "cpu";
 //Accessed field numbers in files
 constexpr int fieldnum_utime = 14;

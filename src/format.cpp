@@ -14,6 +14,15 @@ string Format::ElapsedTime(long seconds)
     seconds -= hours*3600l;
     long minutes = seconds/60l;
     seconds -= minutes*60l;
-    return std::to_string(hours) + std::to_string(minutes) + std::to_string(seconds);
+
+    std::string secondsstr = (seconds >= 0) ? (std::to_string(seconds)) : ("00");
+    std::string minutesstr = (minutes >= 0) ? (std::to_string(minutes)) : ("00");
+    std::string hoursstr = (hours >= 0) ? (std::to_string(hours)) : ("00");
+
+    if(hoursstr.length() == 1){hoursstr = "0"+hoursstr;}
+    if(minutesstr.length() == 1){minutesstr = "0"+minutesstr;}
+    if(secondsstr.length() == 1){secondsstr = "0"+secondsstr;}
+
+    return hoursstr+":"+minutesstr+":"+secondsstr;
 
 }
