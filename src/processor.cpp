@@ -1,6 +1,7 @@
 #include "processor.h"
 #include <cassert>
 #include <iostream>
+#include <math.h>
 
 float ProcessorBase::Utilization()
 {
@@ -12,8 +13,9 @@ float ProcessorBase::Utilization()
     _active = GetActiveJiffies();
     _total = _idle + _active;
 
-    _totald = float(_total) - float(_prevTotal);
-    _idled = float(_idle) - float(_prevIdle);
+    float _totald = float(_total) - float(_prevTotal);
+    float _idled = float(_idle) - float(_prevIdle);
+    if(_totald <= epsilon){return 0.0f;}
     return (_totald - _idled)/_totald;
 }
 

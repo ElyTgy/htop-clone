@@ -8,9 +8,6 @@ public:
   float Utilization();
   virtual long GetActiveJiffies()=0;
 protected:
-    float _totald=0;
-    float _idled=0;
-
     long _prevIdle=0;
     long _idle=0;
 
@@ -19,6 +16,8 @@ protected:
 
     long _prevTotal=0;
     long _total=0;
+
+    const float epsilon =  0.0001f;
 };
 
 class CPUProccessor : public ProcessorBase

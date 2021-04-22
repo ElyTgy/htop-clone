@@ -10,10 +10,6 @@ using std::string;
 using std::to_string;
 using std::vector;
 
-Process& Process::operator=(Process&& other)
-{
-    _pid = other._pid;
-}
 
 // TODO: Return this process's ID
 Process::Process(int pid) : _pid(pid), proccessor(pid) {}
