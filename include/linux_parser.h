@@ -24,9 +24,11 @@ const std::string field_pidUID = "Uid:";
 const std::string field_pidVMSize = "VmSize:";
 const std::string field_cpu = "cpu";
 //Accessed field numbers in files
-constexpr int fieldnum_utime = 14;
-constexpr int fieldnum_stime = 15;
-constexpr int fieldnum_username = 22;
+constexpr short int fieldnum_utime = 14;
+constexpr short int fieldnum_stime = 15;
+constexpr short int fieldnum_cutime = 16;
+constexpr short int fieldnum_cstime = 17;
+constexpr short int fieldnum_starttime = 22;
 
 // System
 float MemoryUtilization();
@@ -69,7 +71,7 @@ long int UpTime(int pid);
 //helper functions
 int GetValueForField(const std::string& filePath, const std::string& fieldName);
 std::vector<std::string> GetValuesForField(const std::string& filePath, const std::string& fieldName);
-long int GetValueAtRow(const std::string& filePath, int rowNum);
+std::string GetValueAtRow(const std::string& filePath, int rowNum);
 
 };  // namespace LinuxParser
 

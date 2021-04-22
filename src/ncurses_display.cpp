@@ -32,16 +32,25 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   int row{0};
   mvwprintw(window, ++row, 2, ("OS: " + system.OperatingSystem()).c_str());
   mvwprintw(window, ++row, 2, ("Kernel: " + system.Kernel()).c_str());
+  
   mvwprintw(window, ++row, 2, "CPU: ");
   wattron(window, COLOR_PAIR(1));
   mvwprintw(window, row, 10, "");
   wprintw(window, ProgressBar(system.Cpu().Utilization()).c_str());
   wattroff(window, COLOR_PAIR(1));
+  
+  // mvwprintw(window, ++row, 2, "CPU1: ");
+  // wattron(window, COLOR_PAIR(1));
+  // mvwprintw(window, row, 10, "");
+  // wprintw(window, ProgressBar(50.0f).c_str());
+  // wattroff(window, COLOR_PAIR(1));
+
   mvwprintw(window, ++row, 2, "Memory: ");
   wattron(window, COLOR_PAIR(1));
   mvwprintw(window, row, 10, "");
   wprintw(window, ProgressBar(system.MemoryUtilization()).c_str());
   wattroff(window, COLOR_PAIR(1));
+
   mvwprintw(window, ++row, 2,
             ("Total Processes: " + to_string(system.TotalProcesses())).c_str());
   mvwprintw(
@@ -69,6 +78,7 @@ void NCursesDisplay::DisplayProcesses(std::vector<Process>& processes,
   mvwprintw(window, row, time_column, "TIME+");
   mvwprintw(window, row, command_column, "COMMAND");
   wattroff(window, COLOR_PAIR(2));
+  std::sort(processes.begin(), processes.end());
   for (int i = 0; i < n; ++i) {
     mvwprintw(window, ++row, pid_column, to_string(processes[i].Pid()).c_str());
     mvwprintw(window, row, user_column, processes[i].User().c_str());

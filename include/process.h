@@ -21,8 +21,8 @@ class Process {
 
   // TODO: Declare any necessary private members
  private:
-    const int _pid;
-    CPUProccessor proccessor;
+    int _pid;
+    ProccessProccessor proccessor;
 };
 
 #endif

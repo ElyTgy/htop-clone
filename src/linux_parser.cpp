@@ -107,24 +107,7 @@ long LinuxParser::UpTime()
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() 
 {
-    std::vector<std::string> cpuUtils(CpuUtilization());
-    std::vector<long> cpuUtilsl{};
-    
-    for(unsigned int i = 0; i < cpuUtils.size(); ++i)
-    {
-      cpuUtilsl.push_back(stol(cpuUtils[i]));
-    }
-
-    cpuUtilsl[kUser_] = cpuUtilsl[kUser_] - cpuUtilsl[kGuest_];
-    cpuUtilsl[kNice_] = cpuUtilsl[kNice_] - cpuUtilsl[kGuestNice_];
-
-    long sum = 0;
-    for(int i = 0; i < CPUStatesNum_; ++i)
-    {
-        sum += cpuUtilsl[i];
-    }
-
-    return sum;
+    return IdleJiffies() + ActiveJiffies();
 }
 
 // TODO: Read and return the number of active jiffies for a PID
@@ -132,16 +115,27 @@ long LinuxParser::Jiffies()
 long LinuxParser::ActiveJiffies(int pid) 
 {
     std::string filename = (kProcDirectory+to_string(pid)+kStatFilename);
-    long utime = LinuxParser::GetValueAtRow(filename, fieldnum_utime);
-    long stime = LinuxParser::GetValueAtRow(filename, fieldnum_stime);
+    long utime = stol(LinuxParser::GetValueAtRow(filename, fieldnum_utime));
+    long stime = stol(LinuxParser::GetValueAtRow(filename, fieldnum_stime));
+    long cutime = stol(LinuxParser::GetValueAtRow(filename, fieldnum_cutime));
+    long cstime = stol(LinuxParser::GetValueAtRow(filename, fieldnum_cstime));
+    long starttime = stol(LinuxParser::GetValueAtRow(filename, fieldnum_starttime));
     
-    return (long long int)utime +  stime;
+    return utime +  stime + cutime + cstime + starttime;
 }
 
 // TODO: Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() 
 {
-    return Jiffies()-IdleJiffies();
+    std::vector<std::string> cpuUtils(CpuUtilization());
+    std::vector<long> cpuUtilsl{};
+    
+    for(unsigned int i = 0; i < cpuUtils.size(); ++i)
+    {
+      cpuUtilsl.push_back(stol(cpuUtils[i]));
+    }
+    long sum = cpuUtilsl[kUser_] + cpuUtilsl[kNice_] + cpuUtilsl[kSystem_] + cpuUtilsl[kIRQ_] + cpuUtilsl[kSoftIRQ_] + cpuUtilsl[kSteal_];
+    return sum;
 }
 
 // TODO: Read and return the number of idle jiffies for the system
@@ -234,8 +228,8 @@ string LinuxParser::User(int pid)
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) 
 {
-    long int uptime = GetValueAtRow(kProcDirectory + to_string(pid) + kStatFilename, fieldnum_username);
-    return uptime / sysconf(_SC_CLK_TCK);
+    long int starttime = stol(GetValueAtRow(kProcDirectory + to_string(pid) + kStatFilename, fieldnum_starttime));
+    return UpTime()-(starttime / sysconf(_SC_CLK_TCK));
 }
 
 int LinuxParser::GetValueForField(const std::string& filePath, const std::string& fieldName)
@@ -261,21 +255,21 @@ int LinuxParser::GetValueForField(const std::string& filePath, const std::string
     return fieldVal;//the compiler will complain if i dont return something eventhough this cant be returned
 }
 
-long int LinuxParser::GetValueAtRow(const std::string& filePath, int rowNum)
+std::string LinuxParser::GetValueAtRow(const std::string& filePath, int rowNum)
 {
     std::ifstream file(filePath);
-    long val=0;
+    std::string str {};
     if(file.is_open())
     {
         for(int i = 1; i <= rowNum; ++i)
         {
-            file>>val;
+            file>>str;
         }
-        return val;
+        return str;
         assert(!"row doesnt exist");
     }
     else{assert(!"Cant open file");}
-    return val;//the compiler will complain if i dont return something eventhough this cant be returned
+    return str;//the compiler will complain if i dont return something eventhough this cant be returned
 }
 
 std::vector<std::string> LinuxParser::GetValuesForField(const std::string& filePath, const std::string& fieldName)

@@ -8,10 +8,8 @@ public:
   float Utilization();
   virtual long GetActiveJiffies()=0;
 protected:
-    float _percentage = 0.0f;
-
     float _totald=0;
-    float _actived=0;
+    float _idled=0;
 
     long _prevIdle=0;
     long _idle=0;

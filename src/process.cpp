@@ -2,17 +2,21 @@
 #include <cctype>
 #include <sstream>
 #include <string>
-#include <vector>
 #include <iostream>
+#include <vector>
 #include "process.h"
 
 using std::string;
 using std::to_string;
 using std::vector;
 
-// TODO: Return this process's ID
+Process& Process::operator=(Process&& other)
+{
+    _pid = other._pid;
+}
 
-Process::Process(int pid) : _pid(pid){std::cout<<pid<<std::endl;}
+// TODO: Return this process's ID
+Process::Process(int pid) : _pid(pid), proccessor(pid) {}
 
 int Process::Pid() 
 {
