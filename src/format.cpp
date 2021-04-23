@@ -1,5 +1,6 @@
 #include <string>
-
+#include <sstream>
+#include <iomanip>
 #include "format.h"
 
 using std::string;
@@ -15,14 +16,11 @@ string Format::ElapsedTime(long seconds)
     long minutes = seconds/60l;
     seconds -= minutes*60l;
 
-    std::string secondsstr = (seconds >= 0) ? (std::to_string(seconds)) : ("00");
-    std::string minutesstr = (minutes >= 0) ? (std::to_string(minutes)) : ("00");
-    std::string hoursstr = (hours >= 0) ? (std::to_string(hours)) : ("00");
+    std::ostringstream osstream;
+    osstream << std::setw(2) << std::setfill('0') << hours 
+    << ":" << std::setw(2) << std::setfill('0') << minutes 
+    << ":" << std::setw(2) << std::setfill('0') << seconds;
 
-    if(hoursstr.length() == 1){hoursstr = "0"+hoursstr;}
-    if(minutesstr.length() == 1){minutesstr = "0"+minutesstr;}
-    if(secondsstr.length() == 1){secondsstr = "0"+secondsstr;}
-
-    return hoursstr+":"+minutesstr+":"+secondsstr;
+    return osstream.str();
 
 }

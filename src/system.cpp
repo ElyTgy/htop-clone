@@ -20,7 +20,7 @@ System::System() : cpu_(CPUProccessor())
     auto pids = LinuxParser::Pids();
     for(const int pid : pids)
     {
-        processes_.push_back(Process(pid));
+        processes_.emplace_back(Process(pid));
     }
 }
 

@@ -185,8 +185,9 @@ string LinuxParser::Command(int pid)
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Ram(int pid) 
 {
-    return to_string(GetValueForField(kProcDirectory + std::to_string(pid) + kStatusFilename,
-                            field_pidVMSize));
+    //dividing by 1000 to convert to MB
+    return to_string((GetValueForField(kProcDirectory + std::to_string(pid) + kStatusFilename,
+                            field_pidVMSize))/1000); 
 }
 
 // TODO: Read and return the user ID associated with a process
